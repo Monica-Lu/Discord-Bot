@@ -11,6 +11,9 @@ from discord.ext import commands, tasks
 from discord import app_commands
 from discord.utils import get
 
+import discord, requests as r, pickle, os.path as p
+from dotenv import dotenv_values
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -21,12 +24,13 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-intents=discord.Intents.all()
+intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
 intents.members = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = discord.Client(intents=intents)
+tree = app_commands.CommandTree(bot)
 
 @bot.event
 async def on_ready():
@@ -42,8 +46,8 @@ async def on_ready():
     members = '\n - '.join([member.name for member in guild.members])
     print(f'Guild Members:\n - {members}')
 
-    member_ids = [member.id for member in guild.members]
-    print(member_ids)
+    await tree.sync(guild=guild)
+    print(f"Synced commands with {guild.name} ({guild.id})")
 
 @bot.event
 async def on_message(message):
@@ -51,8 +55,19 @@ async def on_message(message):
         return
     await bot.process_commands(message)
 
-@bot.command()
-async def hello(ctx):
-    await ctx.send("Hi I'm Hammy, nice to meet you! *^_^*")
+@tree.command( name="hello", description="Checks if the bot is online." )
+async def hello(inter: discord.Interaction):
+    await inter.response.send_message("Hi I'm Hammy, nice to meet you! *^_^*")
+    print("[CMD] hello command executed.")
+
+@tree.command( name="sync", description="Sync the bot's command tree")
+async def sync(inter: discord.Interaction):
+    try:
+        await tree.sync()
+        await inter.response.send_message("Command tree synced successfully.")
+        print("[CMD] Command tree synced.")
+    except Exception as e:
+        await inter.response.send_message(f"Command tree could not be synced. Error: {e}")
+        print("[CMD] Command tree sync failed.")
 
 bot.run(TOKEN)
