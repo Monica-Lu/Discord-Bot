@@ -14,11 +14,12 @@ from discord.utils import get
 import discord, requests as r, pickle, os.path as p
 from dotenv import dotenv_values
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+
+import discord
+from discord.ext import commands
+import subprocess
+
+from csv_parse import read_csv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
