@@ -14,11 +14,14 @@ from discord.utils import get
 import discord, requests as r, pickle, os.path as p
 from dotenv import dotenv_values
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+import discord
+from discord.ext import commands
+import subprocess
+
+from turtle import *
+from colorsys import hsv_to_rgb
+
+from csv_parse import read_csv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -69,5 +72,34 @@ async def sync(inter: discord.Interaction):
     except Exception as e:
         await inter.response.send_message(f"Command tree could not be synced. Error: {e}")
         print("[CMD] Command tree sync failed.")
+
+@tree.command(name = "flower", description = "Generate a flower from python turtle.")
+async def flower(inter: discord.Interaction):
+    try:
+        bgcolor("black")
+        speed(0)
+        pensize(8)
+        pencolor("red")
+        pendown()
+        c = 0
+        for i in range(50):
+            c += 1/20
+            for j in range(4):
+                color = hsv_to_rgb(c, j/4, 0.8)
+                pencolor(color)
+                right(90)
+                circle(200-j*4,90)
+                left(90)
+                circle(200-j*4,90)
+                right(180)
+                circle(50,24)
+
+        hideturtle()
+        done()
+        await inter.response.send_message("Flower generated successfully.")
+        print("[CMD] flower command executed successfully.")
+    except Exception as e:
+        await inter.response.send_message(f"Flower generation failed. Error: {e}")
+        print(f"[CMD] flower command failed. Error: {e}")
 
 bot.run(TOKEN)
